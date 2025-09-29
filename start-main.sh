@@ -15,7 +15,8 @@ ssh-copy-id -i ~/.ssh/id_rsa -o 'IdentityFile ~/.ssh/shared_rsa' -o StrictHostKe
 
 # Start HDFS/Spark main here
 export HADOOP_HOME=/opt/hadoop-3.3.6
-export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+export SPARK_HOME=/opt/spark-3.4.1
+export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin
 export JAVA_HOME=/usr/local/openjdk-8
 
 # Format NameNode only if not already formatted
@@ -34,6 +35,17 @@ sleep 5
 # Start DataNode on main
 echo "Starting DataNode on main..."
 hdfs --daemon start datanode
+
+# Start Spark Master
+echo "Starting Spark Master..."
+$SPARK_HOME/sbin/start-master.sh
+
+# Wait for Spark Master to be ready
+sleep 5
+
+# Start Spark Worker on main
+echo "Starting Spark Worker on main..."
+$SPARK_HOME/sbin/start-worker.sh spark://main:7077
 
 # Keep container running
 bash
