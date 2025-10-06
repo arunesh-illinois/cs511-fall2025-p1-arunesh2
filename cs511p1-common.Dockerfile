@@ -30,6 +30,12 @@ RUN wget https://archive.apache.org/dist/spark/spark-3.4.1/spark-3.4.1-bin-hadoo
     mv /opt/spark-3.4.1-bin-hadoop3 /opt/spark-3.4.1 && \
     rm spark-3.4.1-bin-hadoop3.tgz
 
+# Install SBT for Scala compilation
+RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | tee /etc/apt/sources.list.d/sbt.list && \
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee /etc/apt/sources.list.d/sbt_old.list && \
+    curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | apt-key add && \
+    apt update && \
+    apt install sbt -y
 # Set environment variables for Hadoop/Spark
 ENV HADOOP_HOME=/opt/hadoop-3.3.6
 ENV SPARK_HOME=/opt/spark-3.4.1
@@ -45,3 +51,6 @@ COPY configuration/workers $HADOOP_HOME/etc/hadoop/workers
 COPY configuration/sparks-default.conf $SPARK_HOME/conf/spark-defaults.conf
 COPY configuration/spark-env-setup.sh $SPARK_HOME/conf/spark-env.sh
 COPY configuration/workers $SPARK_HOME/conf/slaves
+
+# Scala copy for sorting
+COPY scala_sorting opt/sorting

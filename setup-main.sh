@@ -29,3 +29,8 @@ chmod +x $SPARK_HOME/conf/spark-env.sh
 # Create Spark work and log directories
 mkdir -p $SPARK_HOME/work
 mkdir -p $SPARK_HOME/logs
+
+# Build Spark Sorting Application
+cd /opt/sorting
+sbt package
+cd /

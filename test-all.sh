@@ -77,9 +77,40 @@ function test_spark_q4() {
 }
 
 function test_terasorting() {
-    # call your program here
-    # make sure your program outputs only the result on screen
-    echo "please rewrite this function";
+
+    # Step 1: Copy csv into hdfs
+    docker compose -f cs511p1-compose.yaml cp scala_sorting/terasorting_test.csv main:/input.csv >/dev/null 2>&1
+
+    # Step 2: Upload the csv to hdfs
+    docker compose -f cs511p1-compose.yaml exec main bash -c '\
+        hdfs dfs -rm -r -f /sorting/input /sorting/output; \
+        hdfs dfs -mkdir -p /sorting/input; \
+        hdfs dfs -put -f /input.csv /sorting/input/inputCaps.csv
+    ' >/dev/null 2>&1
+
+    # Step 3: Run Spark job using the Class created with input & output
+    docker compose -f cs511p1-compose.yaml exec main bash -c '\
+        spark-submit \
+        --class TeraSortByCaps \
+        --master spark://main:7077 \
+        /opt/sorting/target/scala-2.12/terasortingbyyearcap_2.12-1.0.jar \
+        hdfs://main:9000/sorting/input \
+        hdfs://main:9000/sorting/output
+    ' >/dev/null 2>&1
+
+    # Step 4: Merge the HDFS output to a single csv and store it in a temp directory
+    docker compose -f cs511p1-compose.yaml exec main bash -c '\
+        hdfs dfs -getmerge /sorting/output /tmp/sorted_caps.csv
+    ' >/dev/null 2>&1
+
+    # Step 5: Copy CSV from docker to local
+    docker compose -f cs511p1-compose.yaml cp main:/tmp/sorted_caps.csv out/terasorting_out.csv >/dev/null 2>&1
+
+    # Step 6: Print the CSV to stdout for .out file testing
+    cat out/terasorting_out.csv
+
+    # Step 7: Delete local temporary CSV
+    rm -f out/terasorting_out.csv
 }
 
 function test_pagerank() {
