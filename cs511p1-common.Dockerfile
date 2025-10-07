@@ -54,3 +54,4 @@ COPY configuration/workers $SPARK_HOME/conf/slaves
 
 # Scala copy for sorting
 COPY scala_sorting opt/sorting
+COPY pagerank_sorting opt/pagerank

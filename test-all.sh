@@ -114,9 +114,41 @@ function test_terasorting() {
 }
 
 function test_pagerank() {
-    # extra credit
-    # make sure your program outputs only the result on screen
-    echo "please rewrite this function";
+    # Step 1: Copy csv into hdfs
+    docker compose -f cs511p1-compose.yaml cp pagerank_sorting/pagerank_test.csv main:/graph_input.csv >/dev/null 2>&1
+
+    # Step 2: Upload the csv to hdfs
+    docker compose -f cs511p1-compose.yaml exec main bash -c '\
+      hdfs dfs -rm -r -f /pagerank/input /pagerank/output; \
+      hdfs dfs -mkdir -p /pagerank/input; \
+      hdfs dfs -put -f /graph_input.csv /pagerank/input/graph.csv
+    ' >/dev/null 2>&1
+
+    # Step 3: Run Spark job using the Class created for PageRank with input & output
+    docker compose -f cs511p1-compose.yaml exec main bash -c '\
+      spark-submit \
+      --class PageRankImplementation \
+      --master spark://main:7077 \
+      --driver-memory 1g \
+      --executor-memory 1g \
+      /opt/pagerank/target/scala-2.12/pagerankimplementation_2.12-1.0.jar \
+      hdfs://main:9000/pagerank/input \
+      hdfs://main:9000/pagerank/output
+    ' >/dev/null 2>&1
+
+    # Step 4: Merge the HDFS output to a single csv and store it in a temp directory
+    docker compose -f cs511p1-compose.yaml exec main bash -c '\
+        hdfs dfs -getmerge /pagerank/output /tmp/pagerank_test.csv
+    ' >/dev/null 2>&1
+
+    # Step 5: Copy CSV from docker to local
+    docker compose -f cs511p1-compose.yaml cp main:/tmp/pagerank_test.csv out/pagerank_output.csv >/dev/null 2>&1
+
+    # Step 6: Print the CSV to stdout for .out file testing
+    cat out/pagerank_output.csv
+
+    # Step 7: Delete local temporary CSV
+    rm -f out/pagerank_output.csv
 }
 
 GREEN='\033[0;32m'

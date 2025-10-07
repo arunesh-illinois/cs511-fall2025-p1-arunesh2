@@ -34,3 +34,8 @@ mkdir -p $SPARK_HOME/logs
 cd /opt/sorting
 sbt package
 cd /
+
+# Build PageRank Application
+cd /opt/pagerank
+sbt package
+cd /
