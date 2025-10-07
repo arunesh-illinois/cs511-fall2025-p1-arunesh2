@@ -3,23 +3,23 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 object TeraSortByCaps {
-  def main(args: Array[String]): Unit = {
+  def main(arguments: Array[String]): Unit = {
 
     // Take the arguments for input and output path
-    if (args.length < 2) {
-      println("Usage: TeraSortByCaps <input_path> <output_path>")
+    if (arguments.length < 2) {
+      println("Incorrect Usage, Correct Usage: TeraSortByCaps <input_path> <output_path>")
       System.exit(1)
     }
 
-    val inputPath = args(0)
-    val outputPath = args(1)
+    val inputPath = arguments(0)
+    val outputPath = arguments(1)
 
     // Create Spark session for Tera Sorting by Year Cap
-    val spark = SparkSession.builder()
+    val sparkSion = SparkSession.builder()
       .appName("Tera Sorting By Year Cap")
       .getOrCreate()
 
-    import spark.implicits._
+    import sparkSion.implicits._
 
     // Define the simple schema for the serialCaps
     val serialYearSchema = StructType(Array(
@@ -28,7 +28,7 @@ object TeraSortByCaps {
     ))
 
     // Read CSV from HDFS based on the input path and ignore header
-    val capsDF = spark.read
+    val capsDF = sparkSion.read
       .option("header", "false")
       .schema(serialYearSchema)
       .csv(inputPath)
@@ -46,6 +46,6 @@ object TeraSortByCaps {
       .csv(outputPath)
 
     // End the Spark session
-    spark.stop()
+    sparkSion.stop()
   }
 }
